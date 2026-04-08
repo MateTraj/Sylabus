@@ -1,5 +1,10 @@
-import { useEffect, useState } from 'react';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
+import SyllabusList from './components/SyllabusList';
+import SyllabusDetail from './components/SyllabusDetail';
+import SyllabusForm from './components/SyllabusForm';
+import CurriculumGridView from './components/CurriculumGridView';
 
 interface Forecast {
     date: string;
@@ -9,9 +14,9 @@ interface Forecast {
 }
 
 function App() {
-    const [forecasts, setForecasts] = useState<Forecast[]>();
+    const [forecasts, setForecasts] = React.useState<Forecast[]>();
 
-    useEffect(() => {
+    React.useEffect(() => {
         populateWeatherData();
     }, []);
 
@@ -39,11 +44,27 @@ function App() {
         </table>;
 
     return (
-        <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
-        </div>
+        <BrowserRouter>
+            <div style={{ padding: 16 }}>
+                <header style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h1>System zarz¹dzania sylabusami</h1>
+                    <nav>
+                        <Link to="/" style={{ marginRight: 12 }}>Lista</Link>
+                        <Link to="/create" style={{ marginRight: 12 }}>Nowy</Link>
+                        <Link to="/grid">Siatka</Link>
+                    </nav>
+                </header>
+
+                <main>
+                    <Routes>
+                        <Route path="/" element={<SyllabusList />} />
+                        <Route path="/create" element={<SyllabusForm />} />
+                        <Route path="/grid" element={<CurriculumGridView />} />
+                        <Route path="/syllabus/:id" element={<SyllabusDetail />} />
+                    </Routes>
+                </main>
+            </div>
+        </BrowserRouter>
     );
 
     async function populateWeatherData() {
