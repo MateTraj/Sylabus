@@ -47,7 +47,7 @@ function App() {
         <BrowserRouter>
             <div style={{ padding: 16 }}>
                 <header style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h1>System zarz¹dzania sylabusami</h1>
+                    <h1>System zarz dzania sylabusami</h1>
                     <nav>
                         <Link to="/" style={{ marginRight: 12 }}>Lista</Link>
                         <Link to="/create" style={{ marginRight: 12 }}>Nowy</Link>

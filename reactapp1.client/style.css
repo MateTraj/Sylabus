@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@600&family=Open+Sans:wght@600&display=swap');
+
+p, a, h1, h2, h3, h4, h5, h6, button {
+    font-family: 'Open Sans', sans-serif;
+}
+.top, .footer {
+    background-color: rgb(13, 109, 218);
+    height: 100px;
+    width: 100%;
+    clear: both;
+    color: white;
+}
+.banner{
+    width: 75%;
+    float: left;
+}
+.banner h1{
+    margin: 20px;
+}
+.userlogon{
+    width: 25%;
+    float: left;
+    text-align: center;
+    margin-top: 30px;
+}
+.left {
+    background-color: rgb(165, 233, 255);
+    height: 800px;
+    width: 15%;
+    float: left;
+    text-align: center;
+}
+.left li{
+    padding: 5%;
+}
+.right {
+    background-color: white;
+    height: 800px;
+    width: 85%;
+    float: left;
+}

@@ -54,9 +54,9 @@ export default defineConfig({
         },
         // wymuszenie portu 5173 jako domy lnego; mo esz nadpisa  przez DEV_SERVER_PORT
         port: parseInt(env.DEV_SERVER_PORT || '5173'),
-        //https: {
-        //    key: fs.readFileSync(keyFilePath),
-        //    cert: fs.readFileSync(certFilePath),
-        //}
+        https: {
+            key: fs.readFileSync(keyFilePath),
+            cert: fs.readFileSync(certFilePath),
+        }
     }
 })
