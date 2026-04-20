@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+Ôªøimport * as React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Syllabus, SyllabusVersion } from '../types/types';
+import type { Syllabus, SyllabusVersion } from '../types/types';
 import { fetchSyllabus, addVersion } from '../api/api';
 
 export default function SyllabusDetail() {
   const { id } = useParams<{ id: string }>();
-  const nav = useNavigate();
-  const [item, setItem] = useState<Syllabus | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState<Partial<SyllabusVersion>>({
+  const navigate = useNavigate();
+  const [item, setItem] = React.useState<Syllabus | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [adding, setAdding] = React.useState(false);
+  const [form, setForm] = React.useState<Partial<SyllabusVersion>>({
     title: '',
     versionNumber: 1,
     totalHours: 0,
@@ -20,7 +20,7 @@ export default function SyllabusDetail() {
     changeNote: '',
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!id) return;
     (async () => {
       setLoading(true);
@@ -32,14 +32,17 @@ export default function SyllabusDetail() {
   }, [id]);
 
   if (!id) return <p>Brak id</p>;
-  if (loading || !item) return <p>£adowanie...</p>;
+  if (loading || !item) return <p>≈Åadowanie...</p>;
+
+  // gwarantujemy typ string dla dalszego u≈ºycia
+  const sid: string = id as string;
 
   async function handleAddVersion(e?: React.FormEvent) {
     e?.preventDefault();
     setAdding(true);
     try {
-      const created = await addVersion(id, {
-        title: form.title || item.title,
+      await addVersion(sid, {
+        title: form.title || item!.title,
         versionNumber: form.versionNumber || 1,
         description: form.description,
         totalHours: form.totalHours || 0,
@@ -48,8 +51,7 @@ export default function SyllabusDetail() {
         otherHours: form.otherHours || 0,
         changeNote: form.changeNote,
       });
-      // odúwieø
-      const s = await fetchSyllabus(id);
+      const s = await fetchSyllabus(sid);
       setItem(s);
       setForm({ ...form, title: '', changeNote: '' });
     } catch (err) {
@@ -59,46 +61,46 @@ export default function SyllabusDetail() {
 
   return (
     <div>
-      <button onClick={() => nav(-1)}>PowrÛt</button>
-      <h2>{item.title} ({item.code})</h2>
-      <p><strong>Oúrodek:</strong> {item.center?.name}</p>
-      <p><strong>Rok wprowadzenia:</strong> {item.yearIntroduced}</p>
-      <p>{item.description}</p>
+      <button onClick={() => navigate(-1)}>Powr√≥t</button>
+      <h2>{item!.title} ({item!.code})</h2>
+      <p><strong>Wydzia≈Ç:</strong> {item!.center?.name}</p>
+      <p><strong>Rok wprowadzenia:</strong> {item!.yearIntroduced}</p>
+      <p>{item!.description}</p>
 
       <h3>Wersje</h3>
       <ul>
-        {item.versions?.map(v => (
+        {item!.versions?.map(v => (
           <li key={v.id}>
-            <strong>v{v.versionNumber}</strong> ó {v.title} ó utworzono: {new Date(v.createdAt).toLocaleString()}
+            <strong>v{v.versionNumber}</strong> ‚Äî {v.title} ‚Äî utworzono: {new Date(v.createdAt).toLocaleString()}
             <div>Godziny: {v.totalHours} (W:{v.theoryHours} L:{v.labHours} O:{v.otherHours})</div>
             <div>Notatka: {v.changeNote}</div>
           </li>
         ))}
       </ul>
 
-      <h3>Dodaj wersjÍ</h3>
+      <h3>Dodaj wersjƒô</h3>
       <form onSubmit={handleAddVersion} style={{ display: 'grid', gap: 8, maxWidth: 600 }}>
-        <input placeholder="Tytu≥ wersji" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} />
+        <input placeholder="Tytu≈Ç wersji" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} />
         <input type="number" placeholder="Numer wersji" value={form.versionNumber ?? 1} onChange={e => setForm({ ...form, versionNumber: Number(e.target.value) })} />
         <textarea placeholder="Opis" value={form.description || ''} onChange={e => setForm({ ...form, description: e.currentTarget.value })} />
         <div style={{ display: 'flex', gap: 8 }}>
           <input type="number" placeholder="Suma godzin" value={form.totalHours ?? 0} onChange={e => setForm({ ...form, totalHours: Number(e.target.value) })} />
-          <input type="number" placeholder="Wyk≥ady" value={form.theoryHours ?? 0} onChange={e => setForm({ ...form, theoryHours: Number(e.target.value) })} />
-          <input type="number" placeholder="∆wiczenia" value={form.labHours ?? 0} onChange={e => setForm({ ...form, labHours: Number(e.target.value) })} />
+          <input type="number" placeholder="Wyk≈Çady" value={form.theoryHours ?? 0} onChange={e => setForm({ ...form, theoryHours: Number(e.target.value) })} />
+          <input type="number" placeholder="ƒÜwiczenia" value={form.labHours ?? 0} onChange={e => setForm({ ...form, labHours: Number(e.target.value) })} />
           <input type="number" placeholder="Inne" value={form.otherHours ?? 0} onChange={e => setForm({ ...form, otherHours: Number(e.target.value) })} />
         </div>
         <input placeholder="Notatka zmian" value={form.changeNote || ''} onChange={e => setForm({ ...form, changeNote: e.target.value })} />
         <div>
-          <button type="submit" disabled={adding}>Dodaj wersjÍ</button>
-          <Link to={`/syllabus/${id}/export`}><button type="button" style={{ marginLeft: 8 }}>Eksport (wymaga endpointu)</button></Link>
+          <button type="submit" disabled={adding}>Dodaj wersjƒô</button>
+          <Link to={`/syllabus/${sid}/export`}><button type="button" style={{ marginLeft: 8 }}>Eksport (wymaga endpointu)</button></Link>
         </div>
       </form>
 
-      <h3>Siatka przedmiotÛw (dla tego sylabusa)</h3>
+      <h3>Siatka przedmiot√≥w (dla tego sylabusa)</h3>
       <table className="table">
         <thead><tr><th>Semestr</th><th>Godziny</th></tr></thead>
         <tbody>
-          {item.curriculumEntries?.map(e => (
+          {item!.curriculumEntries?.map(e => (
             <tr key={e.id}><td>{e.semester}</td><td>{e.hours}</td></tr>
           )) ?? <tr><td colSpan={2}>Brak</td></tr>}
         </tbody>

@@ -1,78 +1,82 @@
-import React, { useEffect, useState } from 'react';
-import { Syllabus } from '../types/types';
-import { fetchSyllabuses } from '../api/api';
+Ôªøimport React from 'react';
 import { Link } from 'react-router-dom';
+import type { Syllabus } from '../types/types';
+import { fetchSyllabuses } from '../api/api';
 
 export default function SyllabusList() {
-  const [list, setList] = useState<Syllabus[]>([]);
-  const [search, setSearch] = useState('');
-  const [year, setYear] = useState<number | ''>('');
-  const [loading, setLoading] = useState(false);
-  const [centers, setCenters] = useState<Array<{ id?: string; name?: string }>>([]);
-  const [centerId, setCenterId] = useState<string | ''>('');
+  const [list, setList] = React.useState<Syllabus[]>([]);
+  const [search, setSearch] = React.useState('');
+  const [year, setYear] = React.useState<number | ''>('');
+  const [loading, setLoading] = React.useState(false);
+  const [centers, setCenters] = React.useState<Array<{ id?: string; name?: string }>>([]);
+  const [centerId, setCenterId] = React.useState<string | ''>('');
+  const [error, setError] = React.useState('');
 
   async function load() {
+    console.log('SyllabusList: load() called with search=', search, 'year=', year);
     setLoading(true);
+    setError('');
     try {
       const data = await fetchSyllabuses({ search: search || undefined, year: year ? Number(year) : undefined });
+      console.log('SyllabusList: fetched data', data);
       setList(data);
-      // derive centers from fetched list
       const unique = Array.from(new Map(data.map(s => [s.center?.id || '', { id: s.center?.id, name: s.center?.name }])).values());
       setCenters(unique.filter(c => c.name));
+    } catch (err) {
+      console.error('SyllabusList: fetch error', err);
+      setError(String(err));
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    // apply client-side center filter (server supports centerId but controllers may not expose centers endpoint)
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, year, centerId]);
+  React.useEffect(() => { load(); }, []);
+  React.useEffect(() => { load(); }, [search, year, centerId]);
 
   const filtered = centerId ? list.filter(s => s.centerId === centerId) : list;
 
   return (
     <div>
-      <h2>Lista sylabusÛw</h2>
+      <h2>Lista sylabus√≥w</h2>
+
+      {error && <div style={{background:'#fee',color:'#c00',padding:8,marginBottom:8,borderRadius:6}}>{error}</div>}
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
         <input placeholder="Szukaj po tytule lub kodzie" value={search} onChange={e => setSearch(e.target.value)} />
         <input placeholder="Rok" value={year} onChange={e => setYear(e.target.value === '' ? '' : Number(e.target.value))} style={{ width: 80 }} />
         <select value={centerId} onChange={e => setCenterId(e.target.value)}>
-          <option value="">Wszystkie oúrodki</option>
+          <option value="">Wszystkie o≈õrodki</option>
           {centers.map(c => c.id && <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <Link to="/create"><button>Nowy sylabus</button></Link>
-        <Link to="/grid"><button>Siatka przedmiotÛw</button></Link>
+        <Link to="/grid"><button>Siatka przedmiot√≥w</button></Link>
       </div>
 
-      {loading ? <p>£adowanie...</p> : (
+      {loading ? <p>≈Åadowanie...</p> : (
         <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <th>Kod</th>
-              <th>Tytu≥</th>
-              <th>Oúrodek</th>
+              <th>Tytu≈Ç</th>
+              <th>O≈õrodek</th>
               <th>Rok</th>
               <th>Wersja (najnowsza)</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map(s => (
-              <tr key={s.id}>
-                <td><Link to={`/syllabus/${s.id}`}>{s.code}</Link></td>
-                <td><Link to={`/syllabus/${s.id}`}>{s.title}</Link></td>
-                <td>{s.center?.name}</td>
-                <td>{s.yearIntroduced}</td>
-                <td>{s.versions && s.versions.length ? s.versions[0].versionNumber : '-'}</td>
-              </tr>
-            ))}
+            {filtered.length === 0 ? (
+              <tr><td colSpan={5} style={{textAlign:'center',padding:16}}>Brak sylabus√≥w</td></tr>
+            ) : (
+              filtered.map(s => (
+                <tr key={s.id}>
+                  <td><Link to={`/syllabus/${s.id}`}>{s.code}</Link></td>
+                  <td><Link to={`/syllabus/${s.id}`}>{s.title}</Link></td>
+                  <td>{s.center?.name}</td>
+                  <td>{s.yearIntroduced}</td>
+                  <td>{s.versions && s.versions.length ? s.versions[0].versionNumber : '-'}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       )}

@@ -1,11 +1,86 @@
-﻿#root {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 2rem;
+﻿@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@600&family=Open+Sans:wght@600&display=swap');
+
+p, a, h1, h2, h3, h4, h5, h6, button, li, th, td {
+    font-family: 'Open Sans', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.top, .footer {
+    background-color: rgb(13, 109, 218);
+    height: 100px;
+    width: 100%;
+    clear: both;
+    color: white;
+}
+
+.banner {
+    width: 75%;
+    float: left;
+}
+
+.banner h1 {
+    margin: 20px;
+}
+
+.userlogon {
+    width: 25%;
+    float: left;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.left {
+    background-color: rgb(165, 233, 255);
+    height: 800px;
+    width: 15%;
+    float: left;
     text-align: center;
 }
 
-th, td {
-    padding-left: 1rem;
-    padding-right: 1rem;
+.left h2 {
+    font-size: 16px;
+    margin: 15px 0 5px 0;
+}
+
+.left ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.left li {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.left li:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.right {
+    background-color: white;
+    height: 800px;
+    width: 85%;
+    float: left;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.logout {
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.logout:hover {
+    background-color: rgba(255, 255, 255, 0.2);
 }

@@ -1,5 +1,4 @@
 import { fileURLToPath, URL } from 'node:url';
-
 import { defineConfig } from 'vite';
 import plugin from '@vitejs/plugin-react';
 import fs from 'fs';
@@ -37,7 +36,6 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
 const target = env.ASPNETCORE_HTTPS_PORT ? `https://localhost:${env.ASPNETCORE_HTTPS_PORT}` :
     env.ASPNETCORE_URLS ? env.ASPNETCORE_URLS.split(';')[0] : 'https://localhost:7241';
 
-// https://vitejs.dev/config/
 export default defineConfig({
     plugins: [plugin()],
     resolve: {
@@ -47,16 +45,15 @@ export default defineConfig({
     },
     server: {
         proxy: {
+            '^/api': {
+                target,
+                secure: false
+            },
             '^/weatherforecast': {
                 target,
                 secure: false
             }
         },
-        // wymuszenie portu 5173 jako domy lnego; mo esz nadpisa  przez DEV_SERVER_PORT
         port: parseInt(env.DEV_SERVER_PORT || '5173'),
-        //https: {
-        //    key: fs.readFileSync(keyFilePath),
-        //    cert: fs.readFileSync(certFilePath),
-        //}
     }
 })

@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { createSyllabus } from '../api/api';
+ï»¿import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createSyllabus } from '../api/api';
 
 export default function SyllabusForm() {
-  const nav = useNavigate();
-  const [form, setForm] = useState({
+  const navigate = useNavigate();
+  const [form, setForm] = React.useState({
     code: '',
     title: '',
     description: '',
     yearIntroduced: new Date().getFullYear(),
     centerId: '',
   });
-  const [initialVersion, setInitialVersion] = useState({
+  const [initialVersion, setInitialVersion] = React.useState({
     title: '',
     versionNumber: 1,
     totalHours: 0,
@@ -20,9 +20,11 @@ export default function SyllabusForm() {
     otherHours: 0,
     description: '',
   });
+  const [error, setError] = React.useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError('');
     try {
       const payload: any = {
         code: form.code,
@@ -39,38 +41,40 @@ export default function SyllabusForm() {
           otherHours: initialVersion.otherHours || 0,
           description: initialVersion.description,
         }],
-        curriculumEntries: [], // mo¿esz dodaæ pola do wprowadzania siatki
+        curriculumEntries: [],
       };
       const created = await createSyllabus(payload);
-      nav(`/syllabus/${created.id}`);
+      navigate(`/syllabus/${created.id}`);
     } catch (err) {
-      alert(String(err));
+      setError(String(err));
+      console.error('BÅ‚Ä…d tworzenia sylabusa:', err);
     }
   }
 
   return (
     <div>
       <h2>Nowy sylabus</h2>
+      {error && <div style={{background:'#fee',color:'#c00',padding:8,marginBottom:8,borderRadius:6}}>{error}</div>}
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 8, maxWidth: 700 }}>
         <input placeholder="Kod" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} />
-        <input placeholder="Tytu³" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+        <input placeholder="TytuÅ‚" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
         <input placeholder="Rok wprowadzenia" type="number" value={form.yearIntroduced} onChange={e => setForm({ ...form, yearIntroduced: Number(e.target.value) })} />
-        <input placeholder="Oœrodek Id (opcjonalnie)" value={form.centerId} onChange={e => setForm({ ...form, centerId: e.target.value })} />
+        <input placeholder="OÅ›rodek Id (opcjonalnie)" value={form.centerId} onChange={e => setForm({ ...form, centerId: e.target.value })} />
         <textarea placeholder="Opis" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
 
         <h4>Pierwsza wersja</h4>
-        <input placeholder="Tytu³ wersji" value={initialVersion.title} onChange={e => setInitialVersion({ ...initialVersion, title: e.target.value })} />
+        <input placeholder="TytuÅ‚ wersji" value={initialVersion.title} onChange={e => setInitialVersion({ ...initialVersion, title: e.target.value })} />
         <div style={{ display: 'flex', gap: 8 }}>
           <input type="number" placeholder="Suma godzin" value={initialVersion.totalHours} onChange={e => setInitialVersion({ ...initialVersion, totalHours: Number(e.target.value) })} />
-          <input type="number" placeholder="Wyk³ady" value={initialVersion.theoryHours} onChange={e => setInitialVersion({ ...initialVersion, theoryHours: Number(e.target.value) })} />
-          <input type="number" placeholder="Æwiczenia" value={initialVersion.labHours} onChange={e => setInitialVersion({ ...initialVersion, labHours: Number(e.target.value) })} />
+          <input type="number" placeholder="WykÅ‚ady" value={initialVersion.theoryHours} onChange={e => setInitialVersion({ ...initialVersion, theoryHours: Number(e.target.value) })} />
+          <input type="number" placeholder="Ä†wiczenia" value={initialVersion.labHours} onChange={e => setInitialVersion({ ...initialVersion, labHours: Number(e.target.value) })} />
           <input type="number" placeholder="Inne" value={initialVersion.otherHours} onChange={e => setInitialVersion({ ...initialVersion, otherHours: Number(e.target.value) })} />
         </div>
         <textarea placeholder="Opis wersji" value={initialVersion.description} onChange={e => setInitialVersion({ ...initialVersion, description: e.target.value })} />
 
         <div>
-          <button type="submit">Utwórz sylabus</button>
-          <button type="button" onClick={() => nav(-1)} style={{ marginLeft: 8 }}>Anuluj</button>
+          <button type="submit">UtwÃ³rz sylabus</button>
+          <button type="button" onClick={() => navigate(-1)} style={{ marginLeft: 8 }}>Anuluj</button>
         </div>
       </form>
     </div>

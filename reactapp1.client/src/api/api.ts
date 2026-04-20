@@ -1,4 +1,4 @@
-import { Syllabus, SyllabusVersion } from '../types/types';
+ï»¿import type { Syllabus, SyllabusVersion } from '../types/types';
 
 const base = '/api/syllabuses';
 
@@ -8,13 +8,13 @@ export async function fetchSyllabuses(params?: { centerId?: string; year?: numbe
   if (params?.year) query.set('year', String(params.year));
   if (params?.search) query.set('search', params.search);
   const res = await fetch(`${base}?${query.toString()}`);
-  if (!res.ok) throw new Error('B³¹d pobierania sylabusów');
+  if (!res.ok) throw new Error('BÅ‚Ä…d pobierania sylabusÃ³w');
   return res.json() as Promise<Syllabus[]>;
 }
 
 export async function fetchSyllabus(id: string) {
   const res = await fetch(`${base}/${id}`);
-  if (!res.ok) throw new Error('B³¹d pobierania sylabusa');
+  if (!res.ok) throw new Error('BÅ‚Ä…d pobierania sylabusa');
   return res.json() as Promise<Syllabus>;
 }
 
@@ -24,7 +24,7 @@ export async function createSyllabus(payload: Partial<Syllabus>) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error('B³¹d tworzenia sylabusa');
+  if (!res.ok) throw new Error('BÅ‚Ä…d tworzenia sylabusa');
   return res.json() as Promise<Syllabus>;
 }
 
@@ -36,7 +36,7 @@ export async function addVersion(syllabusId: string, version: Partial<SyllabusVe
   });
   if (!res.ok) {
     const txt = await res.text();
-    throw new Error(txt || 'B³¹d dodawania wersji');
+    throw new Error(txt || 'BÅ‚Ä…d dodawania wersji');
   }
   return res.json() as Promise<SyllabusVersion>;
 }
