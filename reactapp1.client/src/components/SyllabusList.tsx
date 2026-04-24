@@ -1,82 +1,94 @@
 ﻿import React from 'react';
-import { Link } from 'react-router-dom';
-import type { Syllabus } from '../types/types';
-import { fetchSyllabuses } from '../api/api';
+import { useNavigate } from 'react-router-dom';
+import type { Subject } from '../types/types';
+import { fetchSubjects } from '../api/api';
 
 export default function SyllabusList() {
-  const [list, setList] = React.useState<Syllabus[]>([]);
-  const [search, setSearch] = React.useState('');
-  const [year, setYear] = React.useState<number | ''>('');
+  const [list, setList] = React.useState<Subject[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const [centers, setCenters] = React.useState<Array<{ id?: string; name?: string }>>([]);
-  const [centerId, setCenterId] = React.useState<string | ''>('');
   const [error, setError] = React.useState('');
+  const navigate = useNavigate();
 
   async function load() {
-    console.log('SyllabusList: load() called with search=', search, 'year=', year);
+    console.log('SyllabusList: ładowanie danych...');
     setLoading(true);
     setError('');
     try {
-      const data = await fetchSyllabuses({ search: search || undefined, year: year ? Number(year) : undefined });
-      console.log('SyllabusList: fetched data', data);
+      const data = await fetchSubjects();
+      console.log('SyllabusList: pobrano dane:', data);
       setList(data);
-      const unique = Array.from(new Map(data.map(s => [s.center?.id || '', { id: s.center?.id, name: s.center?.name }])).values());
-      setCenters(unique.filter(c => c.name));
     } catch (err) {
-      console.error('SyllabusList: fetch error', err);
-      setError(String(err));
+      console.error('SyllabusList: błąd pobierania:', err);
+      setError(`Błąd: ${err}`);
     } finally {
       setLoading(false);
     }
   }
 
-  React.useEffect(() => { load(); }, []);
-  React.useEffect(() => { load(); }, [search, year, centerId]);
+  React.useEffect(() => {
+    load();
+  }, []);
 
-  const filtered = centerId ? list.filter(s => s.centerId === centerId) : list;
+  if (loading) {
+    return (
+      <div>
+        <h2>Lista przedmiotów</h2>
+        <p>Ładowanie...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <h2>Lista przedmiotów</h2>
+        <div style={{ background: '#fee', color: '#c00', padding: 12, borderRadius: 6 }}>
+          {error}
+        </div>
+        <button onClick={load} style={{ marginTop: 10 }}>Spróbuj ponownie</button>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <h2>Lista sylabusów</h2>
-
-      {error && <div style={{background:'#fee',color:'#c00',padding:8,marginBottom:8,borderRadius:6}}>{error}</div>}
-
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <input placeholder="Szukaj po tytule lub kodzie" value={search} onChange={e => setSearch(e.target.value)} />
-        <input placeholder="Rok" value={year} onChange={e => setYear(e.target.value === '' ? '' : Number(e.target.value))} style={{ width: 80 }} />
-        <select value={centerId} onChange={e => setCenterId(e.target.value)}>
-          <option value="">Wszystkie ośrodki</option>
-          {centers.map(c => c.id && <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <Link to="/create"><button>Nowy sylabus</button></Link>
-        <Link to="/grid"><button>Siatka przedmiotów</button></Link>
+      <h2>Lista przedmiotów</h2>
+      
+      <div style={{ marginBottom: 16 }}>
+        <button onClick={() => navigate('/create')} style={{ padding: '10px 16px', cursor: 'pointer' }}>
+          + Dodaj nowy przedmiot
+        </button>
       </div>
 
-      {loading ? <p>Ładowanie...</p> : (
-        <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+      {list.length === 0 ? (
+        <p>Brak przedmiotów w bazie danych.</p>
+      ) : (
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr>
-              <th>Kod</th>
-              <th>Tytuł</th>
-              <th>Ośrodek</th>
-              <th>Rok</th>
-              <th>Wersja (najnowsza)</th>
+            <tr style={{ background: '#f0f0f0', textAlign: 'left' }}>
+              <th style={{ padding: 10, border: '1px solid #ddd' }}>Kod</th>
+              <th style={{ padding: 10, border: '1px solid #ddd' }}>Nazwa</th>
+              <th style={{ padding: 10, border: '1px solid #ddd' }}>Semestr</th>
+              <th style={{ padding: 10, border: '1px solid #ddd' }}>ECTS</th>
+              <th style={{ padding: 10, border: '1px solid #ddd' }}>Typ</th>
+              <th style={{ padding: 10, border: '1px solid #ddd' }}>Akcje</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan={5} style={{textAlign:'center',padding:16}}>Brak sylabusów</td></tr>
-            ) : (
-              filtered.map(s => (
-                <tr key={s.id}>
-                  <td><Link to={`/syllabus/${s.id}`}>{s.code}</Link></td>
-                  <td><Link to={`/syllabus/${s.id}`}>{s.title}</Link></td>
-                  <td>{s.center?.name}</td>
-                  <td>{s.yearIntroduced}</td>
-                  <td>{s.versions && s.versions.length ? s.versions[0].versionNumber : '-'}</td>
-                </tr>
-              ))
-            )}
+            {list.map(s => (
+              <tr key={s.id} style={{ borderBottom: '1px solid #ddd' }}>
+                <td style={{ padding: 10 }}>{s.code}</td>
+                <td style={{ padding: 10 }}>{s.name}</td>
+                <td style={{ padding: 10 }}>{s.semester}</td>
+                <td style={{ padding: 10 }}>{s.ectsPoints}</td>
+                <td style={{ padding: 10 }}>{s.subjectType || '-'}</td>
+                <td style={{ padding: 10 }}>
+                  <button onClick={() => navigate(`/syllabus/${s.id}`)} style={{ cursor: 'pointer' }}>
+                    Szczegóły
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       )}

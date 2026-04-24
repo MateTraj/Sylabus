@@ -44,16 +44,13 @@ export default defineConfig({
         }
     },
     server: {
-        proxy: {
-            '^/api': {
-                target,
-                secure: false
-            },
-            '^/weatherforecast': {
-                target,
-                secure: false
-            }
-        },
         port: parseInt(env.DEV_SERVER_PORT || '5173'),
+        proxy: {
+            '/api': {
+                target: 'https://localhost:7241',
+                secure: false,
+                changeOrigin: true
+            }
+        }
     }
 })

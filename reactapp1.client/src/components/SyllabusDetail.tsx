@@ -1,110 +1,124 @@
-﻿import * as React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import type { Syllabus, SyllabusVersion } from '../types/types';
-import { fetchSyllabus, addVersion } from '../api/api';
+﻿import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import type { Subject } from '../types/types';
+import { fetchSyllabus } from '../api/api';
 
 export default function SyllabusDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [item, setItem] = React.useState<Syllabus | null>(null);
-  const [loading, setLoading] = React.useState(false);
-  const [adding, setAdding] = React.useState(false);
-  const [form, setForm] = React.useState<Partial<SyllabusVersion>>({
-    title: '',
-    versionNumber: 1,
-    totalHours: 0,
-    theoryHours: 0,
-    labHours: 0,
-    otherHours: 0,
-    description: '',
-    changeNote: '',
-  });
+  const [subject, setSubject] = React.useState<Subject | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
 
   React.useEffect(() => {
     if (!id) return;
-    (async () => {
-      setLoading(true);
-      try {
-        const s = await fetchSyllabus(id);
-        setItem(s);
-      } finally { setLoading(false); }
-    })();
+    
+    setLoading(true);
+    fetchSyllabus(id)
+      .then(data => {
+        setSubject(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(String(err));
+        setLoading(false);
+      });
   }, [id]);
 
-  if (!id) return <p>Brak id</p>;
-  if (loading || !item) return <p>Ładowanie...</p>;
+  if (loading) return <div>Ładowanie...</div>;
+  if (error) return <div style={{ color: 'red' }}>Błąd: {error}</div>;
+  if (!subject) return <div>Nie znaleziono przedmiotu</div>;
 
-  // gwarantujemy typ string dla dalszego użycia
-  const sid: string = id as string;
-
-  async function handleAddVersion(e?: React.FormEvent) {
-    e?.preventDefault();
-    setAdding(true);
-    try {
-      await addVersion(sid, {
-        title: form.title || item!.title,
-        versionNumber: form.versionNumber || 1,
-        description: form.description,
-        totalHours: form.totalHours || 0,
-        theoryHours: form.theoryHours || 0,
-        labHours: form.labHours || 0,
-        otherHours: form.otherHours || 0,
-        changeNote: form.changeNote,
-      });
-      const s = await fetchSyllabus(sid);
-      setItem(s);
-      setForm({ ...form, title: '', changeNote: '' });
-    } catch (err) {
-      alert(String(err));
-    } finally { setAdding(false); }
-  }
+  const currentVersion = subject.versions && subject.versions.length > 0 ? subject.versions[0] : null;
 
   return (
     <div>
-      <button onClick={() => navigate(-1)}>Powrót</button>
-      <h2>{item!.title} ({item!.code})</h2>
-      <p><strong>Wydział:</strong> {item!.center?.name}</p>
-      <p><strong>Rok wprowadzenia:</strong> {item!.yearIntroduced}</p>
-      <p>{item!.description}</p>
+      <button onClick={() => navigate(-1)} style={{ marginBottom: 16 }}>
+        ← Powrót
+      </button>
 
-      <h3>Wersje</h3>
-      <ul>
-        {item!.versions?.map(v => (
-          <li key={v.id}>
-            <strong>v{v.versionNumber}</strong> — {v.title} — utworzono: {new Date(v.createdAt).toLocaleString()}
-            <div>Godziny: {v.totalHours} (W:{v.theoryHours} L:{v.labHours} O:{v.otherHours})</div>
-            <div>Notatka: {v.changeNote}</div>
-          </li>
-        ))}
-      </ul>
+      <h2>{subject.name}</h2>
+      <p><strong>Kod:</strong> {subject.code}</p>
+      <p><strong>Semestr:</strong> {subject.semester}</p>
+      <p><strong>ECTS:</strong> {subject.ectsPoints}</p>
+      <p><strong>Typ:</strong> {subject.subjectType || '-'}</p>
+      {subject.description && <p><strong>Opis:</strong> {subject.description}</p>}
 
-      <h3>Dodaj wersję</h3>
-      <form onSubmit={handleAddVersion} style={{ display: 'grid', gap: 8, maxWidth: 600 }}>
-        <input placeholder="Tytuł wersji" value={form.title || ''} onChange={e => setForm({ ...form, title: e.target.value })} />
-        <input type="number" placeholder="Numer wersji" value={form.versionNumber ?? 1} onChange={e => setForm({ ...form, versionNumber: Number(e.target.value) })} />
-        <textarea placeholder="Opis" value={form.description || ''} onChange={e => setForm({ ...form, description: e.currentTarget.value })} />
-        <div style={{ display: 'flex', gap: 8 }}>
-          <input type="number" placeholder="Suma godzin" value={form.totalHours ?? 0} onChange={e => setForm({ ...form, totalHours: Number(e.target.value) })} />
-          <input type="number" placeholder="Wykłady" value={form.theoryHours ?? 0} onChange={e => setForm({ ...form, theoryHours: Number(e.target.value) })} />
-          <input type="number" placeholder="Ćwiczenia" value={form.labHours ?? 0} onChange={e => setForm({ ...form, labHours: Number(e.target.value) })} />
-          <input type="number" placeholder="Inne" value={form.otherHours ?? 0} onChange={e => setForm({ ...form, otherHours: Number(e.target.value) })} />
-        </div>
-        <input placeholder="Notatka zmian" value={form.changeNote || ''} onChange={e => setForm({ ...form, changeNote: e.target.value })} />
+      <hr style={{ margin: '20px 0' }} />
+
+      {currentVersion ? (
+        <>
+          <h3>Aktualna wersja sylabusa (v{currentVersion.versionNumber})</h3>
+          
+          {currentVersion.description && (
+            <div style={{ marginBottom: 16 }}>
+              <h4>Opis</h4>
+              <p>{currentVersion.description}</p>
+            </div>
+          )}
+
+          {currentVersion.learningOutcomes && (
+            <div style={{ marginBottom: 16 }}>
+              <h4>Efekty kształcenia</h4>
+              <p>{currentVersion.learningOutcomes}</p>
+            </div>
+          )}
+
+          {currentVersion.prerequisites && (
+            <div style={{ marginBottom: 16 }}>
+              <h4>Wymagania wstępne</h4>
+              <p>{currentVersion.prerequisites}</p>
+            </div>
+          )}
+
+          {currentVersion.literature && (
+            <div style={{ marginBottom: 16 }}>
+              <h4>Literatura</h4>
+              <p>{currentVersion.literature}</p>
+            </div>
+          )}
+
+          {currentVersion.assessmentMethods && (
+            <div style={{ marginBottom: 16 }}>
+              <h4>Metody oceniania</h4>
+              <p>{currentVersion.assessmentMethods}</p>
+            </div>
+          )}
+
+          <div style={{ marginBottom: 16 }}>
+            <h4>Godziny</h4>
+            <p>Całkowite: {currentVersion.totalHours}h</p>
+            <p>Wykład: {currentVersion.theoryHours}h</p>
+            <p>Laboratorium: {currentVersion.labHours}h</p>
+            <p>Inne: {currentVersion.otherHours}h</p>
+          </div>
+
+          <div style={{ fontSize: '0.9em', color: '#666', marginTop: 20 }}>
+            <p>
+              Utworzono: {currentVersion.createdAt ? new Date(currentVersion.createdAt).toLocaleString('pl-PL') : '-'}
+            </p>
+            {currentVersion.createdBy && <p>Autor: {currentVersion.createdBy}</p>}
+          </div>
+        </>
+      ) : (
+        <p>Brak wersji sylabusa dla tego przedmiotu.</p>
+      )}
+
+      <hr style={{ margin: '20px 0' }} />
+
+      {subject.versions && subject.versions.length > 1 && (
         <div>
-          <button type="submit" disabled={adding}>Dodaj wersję</button>
-          <Link to={`/syllabus/${sid}/export`}><button type="button" style={{ marginLeft: 8 }}>Eksport (wymaga endpointu)</button></Link>
+          <h3>Historia wersji ({subject.versions.length})</h3>
+          <ul>
+            {subject.versions.map(v => (
+              <li key={v.id}>
+                Wersja {v.versionNumber} - {v.createdAt ? new Date(v.createdAt).toLocaleDateString('pl-PL') : '-'}
+                {v.changeNote && ` - ${v.changeNote}`}
+              </li>
+            ))}
+          </ul>
         </div>
-      </form>
-
-      <h3>Siatka przedmiotów (dla tego sylabusa)</h3>
-      <table className="table">
-        <thead><tr><th>Semestr</th><th>Godziny</th></tr></thead>
-        <tbody>
-          {item!.curriculumEntries?.map(e => (
-            <tr key={e.id}><td>{e.semester}</td><td>{e.hours}</td></tr>
-          )) ?? <tr><td colSpan={2}>Brak</td></tr>}
-        </tbody>
-      </table>
+      )}
     </div>
   );
 }

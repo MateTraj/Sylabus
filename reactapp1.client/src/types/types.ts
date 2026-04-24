@@ -1,44 +1,58 @@
 ﻿export interface Center {
+  id?: string;
+  name?: string;
+  code?: string;
+}
+
+export interface Curriculum {
   id: string;
   name: string;
   code: string;
+  description?: string;
+  centerId?: string;
+  center?: Center;
+  academicYear: number;
+  level?: string;
+  studyMode?: string;
+  subjects?: Subject[];
+  createdAt?: string;
+  createdBy?: string;
 }
 
-export interface CurriculumGridEntry {
+export interface Subject {
   id: string;
-  syllabusId: string;
+  code: string;
+  name: string;
+  description?: string;
+  curriculumId: string;
+  curriculum?: Curriculum;
   semester: number;
-  hours: number;
-  year?: number | null;
+  subjectType?: string;
+  ectsPoints: number;
+  versions?: SubjectVersion[];
+  createdAt?: string;
+  createdBy?: string;
 }
 
-export interface SyllabusVersion {
-  id: string;
-  syllabusId: string;
+export interface SubjectVersion {
+  id?: string;
+  subjectId?: string;
   versionNumber: number;
   title: string;
-  description?: string | null;
-  learningOutcomes?: string | null;
-  prerequisites?: string | null;
-  literature?: string | null;
-  assessmentMethods?: string | null;
+  description?: string;
+  learningOutcomes?: string;
+  prerequisites?: string;
+  literature?: string;
+  assessmentMethods?: string;
   totalHours: number;
   theoryHours: number;
   labHours: number;
   otherHours: number;
-  changeNote?: string | null;
-  createdAt: string;
-  createdBy?: string | null;
+  changeNote?: string;
+  createdAt?: string;
+  createdBy?: string;
 }
 
-export interface Syllabus {
-  id: string;
-  code: string;
-  title: string;
-  description?: string | null;
-  centerId?: string | null;
-  center?: Center | null;
-  yearIntroduced: number;
-  versions?: SyllabusVersion[];
-  curriculumEntries?: CurriculumGridEntry[];
-}
+// Stary alias dla kompatybilności
+export type Syllabus = Subject;
+export type SyllabusVersion = SubjectVersion;

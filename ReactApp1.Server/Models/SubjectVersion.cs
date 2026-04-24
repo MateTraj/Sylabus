@@ -2,15 +2,18 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ReactApp1.Server.Models
 {
-    public class SyllabusVersion : IValidatableObject
+    /// <summary>
+    /// Wersja przedmiotu - historia zmian w sylabusie przedmiotu
+    /// </summary>
+    public class SubjectVersion : IValidatableObject
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        public Guid SyllabusId { get; set; }
-        public Syllabus? Syllabus { get; set; }
+        public Guid SubjectId { get; set; }
+        public Subject? Subject { get; set; }
 
-        // Sequential version number
+        // Numer wersji (kolejny)
         public int VersionNumber { get; set; }
 
         [Required, StringLength(256)]
@@ -18,21 +21,25 @@ namespace ReactApp1.Server.Models
 
         public string? Description { get; set; }
 
-        // Learning outcomes as text (can be migrated to structured collection later)
+        // Cele kszta³cenia / efekty uczenia siê
         public string? LearningOutcomes { get; set; }
 
+        // Wymagania wstêpne
         public string? Prerequisites { get; set; }
 
+        // Literatura
         public string? Literature { get; set; }
 
+        // Metody oceniania
         public string? AssessmentMethods { get; set; }
 
-        // Hours breakdown
+        // Godziny
         public int TotalHours { get; set; }
         public int TheoryHours { get; set; }
         public int LabHours { get; set; }
         public int OtherHours { get; set; }
 
+        // Nota zmian
         public string? ChangeNote { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -43,13 +50,13 @@ namespace ReactApp1.Server.Models
             if (TotalHours != TheoryHours + LabHours + OtherHours)
             {
                 yield return new ValidationResult(
-                    "TotalHours must equal TheoryHours + LabHours + OtherHours.",
+                    "Suma godzin teorii, laboratorium i innych musi równaæ siê godzinom ca³kowitym.",
                     new[] { nameof(TotalHours), nameof(TheoryHours), nameof(LabHours), nameof(OtherHours) });
             }
 
             if (VersionNumber <= 0)
             {
-                yield return new ValidationResult("VersionNumber must be greater than 0.", new[] { nameof(VersionNumber) });
+                yield return new ValidationResult("Numer wersji musi byæ wiêkszy od 0.", new[] { nameof(VersionNumber) });
             }
         }
     }
