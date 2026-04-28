@@ -1,6 +1,6 @@
 ﻿@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@600&family=Open+Sans:wght@600&display=swap');
 
-p, a, h1, h2, h3, h4, h5, h6, button, li, th, td {
+p, a, h1, h2, h3, h4, h5, h6, button, li, th, td, label, small, .tekst, .left{
     font-family: 'Open Sans', sans-serif;
 }
 
@@ -18,7 +18,7 @@ body {
 }
 
 .banner {
-    width: 75%;
+    width: 85%;
     float: left;
 }
 
@@ -27,7 +27,7 @@ body {
 }
 
 .userlogon {
-    width: 25%;
+    width: 15%;
     float: left;
     text-align: center;
     margin-top: 30px;
@@ -36,7 +36,7 @@ body {
 .left {
     background-color: rgb(165, 233, 255);
     height: 800px;
-    width: 15%;
+    width: 12%;
     float: left;
     text-align: center;
 }
@@ -64,7 +64,7 @@ body {
 .right {
     background-color: white;
     height: 800px;
-    width: 85%;
+    width: 88%;
     float: left;
     padding: 20px;
     box-sizing: border-box;

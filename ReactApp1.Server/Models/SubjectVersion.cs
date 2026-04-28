@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+ï»¿using System.ComponentModel.DataAnnotations;
 
 namespace ReactApp1.Server.Models
 {
@@ -13,7 +13,7 @@ namespace ReactApp1.Server.Models
         public Guid SubjectId { get; set; }
         public Subject? Subject { get; set; }
 
-        // Numer wersji (kolejny)
+        // Numer wersji (kolejny) - USTAWIANY AUTOMATYCZNIE przez kontroler
         public int VersionNumber { get; set; }
 
         [Required, StringLength(256)]
@@ -21,10 +21,10 @@ namespace ReactApp1.Server.Models
 
         public string? Description { get; set; }
 
-        // Cele kszta³cenia / efekty uczenia siê
+        // Cele ksztaÅ‚cenia / efekty uczenia siÄ™
         public string? LearningOutcomes { get; set; }
 
-        // Wymagania wstêpne
+        // Wymagania wstÄ™pne
         public string? Prerequisites { get; set; }
 
         // Literatura
@@ -47,17 +47,16 @@ namespace ReactApp1.Server.Models
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            // âœ… Walidacja godzin - TO ZOSTAJE
             if (TotalHours != TheoryHours + LabHours + OtherHours)
             {
                 yield return new ValidationResult(
-                    "Suma godzin teorii, laboratorium i innych musi równaæ siê godzinom ca³kowitym.",
+                    "Suma godzin teorii, laboratorium i innych musi rÃ³wnaÄ‡ siÄ™ godzinom caÅ‚kowitym.",
                     new[] { nameof(TotalHours), nameof(TheoryHours), nameof(LabHours), nameof(OtherHours) });
             }
 
-            if (VersionNumber <= 0)
-            {
-                yield return new ValidationResult("Numer wersji musi byæ wiêkszy od 0.", new[] { nameof(VersionNumber) });
-            }
+            // âŒ USUNIÄ˜TO walidacjÄ™ VersionNumber - backend ustawia to automatycznie
+            // if (VersionNumber <= 0) { ... }
         }
     }
 }

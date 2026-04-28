@@ -56,3 +56,40 @@ export interface SubjectVersion {
 // Stary alias dla kompatybilności
 export type Syllabus = Subject;
 export type SyllabusVersion = SubjectVersion;
+
+/**
+ * Dane do rejestracji nowego użytkownika
+ */
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  fullName?: string;
+}
+
+/**
+ * Dane do logowania
+ */
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+/**
+ * Odpowiedź z serwera po zalogowaniu/rejestracji
+ */
+export interface LoginResponse {
+  token: string;      // Token JWT
+  email: string;      // Email użytkownika
+  fullName: string;   // Pełne imię
+  roles: string[];    // Role użytkownika ["Reader"] lub ["Editor"]
+}
+
+/**
+ * Informacje o zalogowanym użytkowniku (przechowujemy w localStorage)
+ */
+export interface AuthUser {
+  email: string;
+  fullName: string;
+  roles: string[];
+  token: string;
+}
