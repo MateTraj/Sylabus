@@ -1,11 +1,10 @@
 ﻿import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { Subject, SubjectVersion } from '../types/types';
-import { fetchSyllabus, canEdit } from '../api/api';
+import { fetchSyllabus, canEdit, downloadSubjectPdf } from '../api/api';
 import VersionHistory from './VersionHistory';
 import AddVersionForm from './AddVersionForm';
-
-export default function SyllabusDetail() {
+export default function SubjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
@@ -16,6 +15,9 @@ export default function SyllabusDetail() {
   // Stan dla wersjonowania
   const [selectedVersion, setSelectedVersion] = React.useState<SubjectVersion | null>(null);
   const [showAddVersionForm, setShowAddVersionForm] = React.useState(false);
+  
+  // Dodaj stan dla pobierania
+  const [downloading, setDownloading] = React.useState(false);
   
   const isEditor = canEdit();
 
@@ -61,6 +63,22 @@ export default function SyllabusDetail() {
     alert(`✅ Utworzono wersję ${newVersion.versionNumber}!`);
   }
 
+  // Funkcja pobierania PDF aktualnej wersji
+  async function handleDownloadPdf() {
+    if (!subject || !displayedVersion) return;
+    
+    setDownloading(true);
+    try {
+      await downloadSubjectPdf(subject.id, subject.name);
+      console.log('✅ PDF pobrany');
+    } catch (err) {
+      alert(`❌ Błąd pobierania PDF: ${err}`);
+      console.error('Błąd pobierania PDF:', err);
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   if (loading) return <div>Ładowanie...</div>;
   if (error) return <div style={{ color: 'red' }}>Błąd: {error}</div>;
   if (!subject) return <div>Nie znaleziono przedmiotu</div>;
@@ -93,23 +111,42 @@ export default function SyllabusDetail() {
           ← Powrót
         </button>
 
-        {/* Przycisk dodawania nowej wersji - tylko dla Editorów */}
-        {isEditor && !showAddVersionForm && (
+        <div style={{ display: 'flex', gap: 12 }}>
+          {/* Przycisk pobierania PDF */}
           <button
-            onClick={() => setShowAddVersionForm(true)}
+            onClick={handleDownloadPdf}
+            disabled={downloading}
             style={{
               padding: '10px 20px',
-              background: '#28a745',
+              background: downloading ? '#ccc' : '#dc3545',
               color: 'white',
               border: 'none',
               borderRadius: 4,
-              cursor: 'pointer',
+              cursor: downloading ? 'not-allowed' : 'pointer',
               fontWeight: 'bold'
             }}
           >
-            ➕ Nowa wersja sylabusa
+            {downloading ? '⏳ Generowanie...' : '📄 Pobierz PDF'}
           </button>
-        )}
+
+          {/* Istniejący przycisk "Nowa wersja" */}
+          {isEditor && !showAddVersionForm && (
+            <button
+              onClick={() => setShowAddVersionForm(true)}
+              style={{
+                padding: '10px 20px',
+                background: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: 4,
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              ➕ Nowa wersja sylabusa
+            </button>
+          )}
+        </div>
       </div>
 
       {/* === PODSTAWOWE INFORMACJE O PRZEDMIOCIE === */}
@@ -168,6 +205,8 @@ export default function SyllabusDetail() {
           versions={subject.versions}
           currentVersionId={displayedVersion?.id}
           onSelectVersion={setSelectedVersion}
+          subjectId={subject.id}
+          subjectName={subject.name}
         />
       )}
 

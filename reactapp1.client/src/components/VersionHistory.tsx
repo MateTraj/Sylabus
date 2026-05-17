@@ -1,10 +1,14 @@
 ﻿import React from 'react';
 import type { SubjectVersion } from '../types/types';
+import { downloadSubjectVersionPdf } from '../api/api';
 
+// Dodaj props
 interface VersionHistoryProps {
   versions: SubjectVersion[];
   currentVersionId?: string;
   onSelectVersion: (version: SubjectVersion) => void;
+  subjectId: string;
+  subjectName: string;
 }
 
 /**
@@ -13,7 +17,9 @@ interface VersionHistoryProps {
 export default function VersionHistory({ 
   versions, 
   currentVersionId, 
-  onSelectVersion 
+  onSelectVersion,
+  subjectId,
+  subjectName
 }: VersionHistoryProps) {
   
   const [expanded, setExpanded] = React.useState(false);
@@ -136,6 +142,30 @@ export default function VersionHistory({
                   ▶ Wyświetlana poniżej
                 </div>
               )}
+
+              <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    try {
+                      await downloadSubjectVersionPdf(subjectId, version.versionNumber, subjectName);
+                    } catch (err) {
+                      alert(`Błąd: ${err}`);
+                    }
+                  }}
+                  style={{
+                    padding: '6px 12px',
+                    background: '#dc3545',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    fontSize: '0.85em'
+                  }}
+                >
+                  📄 Pobierz PDF
+                </button>
+              </div>
             </div>
           );
         })}

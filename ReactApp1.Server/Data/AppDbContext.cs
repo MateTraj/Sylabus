@@ -21,10 +21,10 @@ namespace ReactApp1.Server.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // ⚠️ WAŻNE: Najpierw wywołujemy bazową konfigurację Identity
+            // Najpierw wywołuje bazową konfigurację Identity
             base.OnModelCreating(modelBuilder);
 
-            // Nasze istniejące relacje
+            // Istniejące relacje
             ConfigureRelationships(modelBuilder);
             
             // Dane startowe

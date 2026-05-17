@@ -242,18 +242,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <h2>Nawigacja</h2>
         <ul>
           <li onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            Lista sylabusów
+            📚 Przeglądaj sylabusy
           </li>
           
           {isEditor && (
-            <li onClick={() => navigate('/create')} style={{ cursor: 'pointer' }}>
-              Nowy sylabus
-            </li>
+            <>
+              <li onClick={() => navigate('/curriculum/create')} style={{ cursor: 'pointer' }}>
+                ➕ Utwórz sylabus
+              </li>
+              <li onClick={() => navigate('/subject/create')} style={{ cursor: 'pointer' }}>
+                📝 Dodaj przedmiot
+              </li>
+            </>
           )}
-          
-          <li onClick={() => navigate('/grid')} style={{ cursor: 'pointer' }}>
-            Siatka przedmiotów
-          </li>
         </ul>
 
         {user && !isEditor && (

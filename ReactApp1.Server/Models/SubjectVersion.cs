@@ -47,7 +47,7 @@ namespace ReactApp1.Server.Models
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            // ✅ Walidacja godzin - TO ZOSTAJE
+            // Walidacja godzin
             if (TotalHours != TheoryHours + LabHours + OtherHours)
             {
                 yield return new ValidationResult(
@@ -55,7 +55,7 @@ namespace ReactApp1.Server.Models
                     new[] { nameof(TotalHours), nameof(TheoryHours), nameof(LabHours), nameof(OtherHours) });
             }
 
-            // ❌ USUNIĘTO walidację VersionNumber - backend ustawia to automatycznie
+            // USUNIĘTO walidację VersionNumber bo backend ustawia to automatycznie
             // if (VersionNumber <= 0) { ... }
         }
     }

@@ -154,7 +154,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
   let errorMessage = `HTTP ${response.status}`;
   try {
     const errorData = await response.json();
-    console.error('🔴 Backend error details:', errorData); // 🔍 Log pełnego obiektu błędu
+    console.error('Backend error details:', errorData); // Log pełnego obiektu błędu
     
     // ASP.NET zwraca błędy walidacji w formacie { errors: { pole: ["błąd1", "błąd2"] } }
     if (errorData.errors) {
@@ -167,13 +167,13 @@ async function handleResponse<T>(response: Response): Promise<T> {
     }
   } catch {
     const text = await response.text();
-    console.error('🔴 Backend error text:', text);
+    console.error('Backend error text:', text);
     errorMessage = text || `HTTP ${response.status}`;
   }
 
   // 401 Unauthorized
   if (response.status === 401) {
-    console.warn('🔒 Sesja wygasła');
+    console.warn('Sesja wygasła');
     logout();
     window.location.href = '/login';
     throw new Error('Sesja wygasła. Zaloguj się ponownie.');
@@ -192,17 +192,17 @@ export async function fetchSubjects(params?: {
   curriculumId?: string; 
   semester?: number; 
   search?: string;
-  year?: string;      // 🆕
-  level?: string;     // 🆕
-  mode?: string;      // 🆕
+  year?: string;
+  level?: string;
+  mode?: string;
 }) {
   const query = new URLSearchParams();
   if (params?.curriculumId) query.set('curriculumId', params.curriculumId);
   if (params?.semester) query.set('semester', String(params.semester));
   if (params?.search) query.set('search', params.search);
-  if (params?.year) query.set('year', params.year);           // 🆕
-  if (params?.level) query.set('level', params.level);        // 🆕
-  if (params?.mode) query.set('mode', params.mode);           // 🆕
+  if (params?.year) query.set('year', params.year);
+  if (params?.level) query.set('level', params.level);
+  if (params?.mode) query.set('mode', params.mode);
   
   const url = query.toString() ? `${subjectsBase}?${query}` : subjectsBase;
   
@@ -227,7 +227,7 @@ export async function fetchSubject(id: string) {
 export async function createSubject(payload: Partial<Subject>) {
   const res = await fetch(subjectsBase, {
     method: 'POST',
-    headers: getAuthHeaders(),  // 🔑 Token wymagany do tworzenia
+    headers: getAuthHeaders(),  // Token wymagany do tworzenia
     body: JSON.stringify(payload),
   });
   return handleResponse<Subject>(res);
@@ -243,6 +243,7 @@ export async function addSubjectVersion(subjectId: string, version: Partial<Subj
 }
 
 // === CURRICULUMS API ===
+
 export async function fetchCurriculums(params?: { year?: number; level?: string }) {
   const query = new URLSearchParams();
   if (params?.year) query.set('year', String(params.year));
@@ -269,6 +270,89 @@ export async function createCurriculum(payload: Partial<Curriculum>) {
     body: JSON.stringify(payload),
   });
   return handleResponse<Curriculum>(res);
+}
+
+// Edycja sylabusa
+export async function updateCurriculum(id: string, payload: Partial<Curriculum>) {
+  const res = await fetch(`${curriculumsBase}/${id}`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse<Curriculum>(res);
+}
+
+// Usuwanie sylabusa
+export async function deleteCurriculum(id: string) {
+  const res = await fetch(`${curriculumsBase}/${id}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  
+  if (res.status === 204) {
+    return; // NoContent - sukces
+  }
+  
+  return handleResponse<void>(res);
+}
+
+// === EKSPORT PDF ===
+
+/**
+ * Pobierz PDF najnowszej wersji przedmiotu
+ */
+export async function downloadSubjectPdf(subjectId: string, subjectName: string) {
+  const url = `${subjectsBase}/${subjectId}/pdf`;
+  
+  const res = await fetch(url, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Błąd pobierania PDF: ${res.status}`);
+  }
+
+  // Pobierz blob (plik binarny)
+  const blob = await res.blob();
+  
+  // Utwórz link do pobrania
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = `${subjectName.replace(/\s+/g, '_')}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(downloadUrl);
+}
+
+/**
+ * Pobierz PDF konkretnej wersji przedmiotu
+ */
+export async function downloadSubjectVersionPdf(
+  subjectId: string, 
+  versionNumber: number, 
+  subjectName: string
+) {
+  const url = `${subjectsBase}/${subjectId}/versions/${versionNumber}/pdf`;
+  
+  const res = await fetch(url, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Błąd pobierania PDF: ${res.status}`);
+  }
+
+  const blob = await res.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = `${subjectName.replace(/\s+/g, '_')}_v${versionNumber}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(downloadUrl);
 }
 
 // Aliasy

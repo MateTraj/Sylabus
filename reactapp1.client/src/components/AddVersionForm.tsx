@@ -81,16 +81,16 @@ export default function AddVersionForm({
 
     try {
       // 🔍 Dokładne logowanie
-      console.log('📤 Wysyłanie wersji:', JSON.stringify(form, null, 2));
-      console.log('📤 SubjectId:', subjectId);
+      console.log('Wysyłanie wersji:', JSON.stringify(form, null, 2));
+      console.log('SubjectId:', subjectId);
       
       const newVersion = await addSubjectVersion(subjectId, form);
-      console.log('✅ Utworzono wersję:', newVersion);
+      console.log('Utworzono wersję:', newVersion);
       onSuccess(newVersion);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Błąd tworzenia wersji';
       setError(errorMsg);
-      console.error('❌ Błąd tworzenia wersji:', err);
+      console.error('Błąd tworzenia wersji:', err);
     } finally {
       setLoading(false);
     }
@@ -195,7 +195,7 @@ export default function AddVersionForm({
           />
         </div>
 
-        {/* GODZINY */}
+        {/* Godziny */}
         <div style={{ 
           marginBottom: 16,
           padding: 16,

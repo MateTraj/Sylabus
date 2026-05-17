@@ -1,8 +1,9 @@
 ﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import SyllabusList from './components/SyllabusList';
-import SyllabusDetail from './components/SyllabusDetail';
+import SyllabusesList from './components/SyllabusesList';
+import CurriculumDetail from './components/CurriculumDetail';
+import CurriculumForm from './components/CurriculumForm';     // NOWE
+import SubjectDetail from './components/SubjectDetail';
 import SyllabusForm from './components/SyllabusForm';
-import CurriculumGridView from './components/CurriculumGridView';
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import Layout from './components/Layout';
@@ -37,7 +38,7 @@ function EditorRoute({ children }: { children: React.ReactNode }) {
     return (
       <div style={{ padding: 20, textAlign: 'center' }}>
         <h2>🔒 Brak uprawnień</h2>
-        <p>Aby wykonać tę akcję, potrzebujesz roli <strong>Editor</strong>.</p>
+        <p>Potrzebujesz roli <strong>Editor</strong>.</p>
         <button onClick={() => window.history.back()}>Wróć</button>
       </div>
     );
@@ -63,29 +64,47 @@ export default function App() {
         <Route path="/" element={
           <ProtectedRoute>
             <Layout>
-              <SyllabusList />
+              <SyllabusesList />
             </Layout>
           </ProtectedRoute>
         } />
 
-        <Route path="/grid" element={
+        <Route path="/curriculum/:id" element={
           <ProtectedRoute>
             <Layout>
-              <CurriculumGridView />
+              <CurriculumDetail />
             </Layout>
           </ProtectedRoute>
         } />
 
-        <Route path="/syllabus/:id" element={
+        {/* Tworzenie sylabusa */}
+        <Route path="/curriculum/create" element={
+          <EditorRoute>
+            <Layout>
+              <CurriculumForm />
+            </Layout>
+          </EditorRoute>
+        } />
+
+        {/* Edycja sylabusa */}
+        <Route path="/curriculum/edit/:id" element={
+          <EditorRoute>
+            <Layout>
+              <CurriculumForm />
+            </Layout>
+          </EditorRoute>
+        } />
+
+        <Route path="/subject/:id" element={
           <ProtectedRoute>
             <Layout>
-              <SyllabusDetail />
+              <SubjectDetail />
             </Layout>
           </ProtectedRoute>
         } />
 
-        {/* === TYLKO DLA EDITORÓW === */}
-        <Route path="/create" element={
+        {/* Tworzenie przedmiotu */}
+        <Route path="/subject/create" element={
           <EditorRoute>
             <Layout>
               <SyllabusForm />

@@ -77,7 +77,7 @@ export default function CurriculumGridView() {
         }}>
           {hasFilters ? (
             <>
-              <p>😕 Nie znaleziono siatek spełniających kryteria.</p>
+              <p>Nie znaleziono siatek spełniających kryteria.</p>
               <button 
                 onClick={() => window.location.href = '/grid'}
                 style={{ padding: '8px 16px', cursor: 'pointer' }}

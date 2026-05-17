@@ -26,11 +26,11 @@ export default function SyllabusList() {
       const level = searchParams.get('level') || undefined;
       const mode = searchParams.get('mode') || undefined;
 
-      console.log('🔍 Aktywne filtry:', { search, year, level, mode });
+      console.log('Aktywne filtry:', { search, year, level, mode });
 
       // Pobierz wszystkie dane z API
       const allData = await fetchSubjects();
-      console.log(`📦 Pobrano ${allData.length} przedmiotów z API`);
+      console.log(`Pobrano ${allData.length} przedmiotów z API`);
 
       // === FILTROWANIE PO STRONIE KLIENTA ===
       let filtered = allData;
@@ -42,33 +42,33 @@ export default function SyllabusList() {
           s.name.toLowerCase().includes(searchLower) || 
           s.code.toLowerCase().includes(searchLower)
         );
-        console.log(`🔎 Po wyszukiwaniu "${search}": ${filtered.length} przedmiotów`);
+        console.log(`Po wyszukiwaniu "${search}": ${filtered.length} przedmiotów`);
       }
 
       // Filtr po roku akademickim
       if (year) {
         const yearNum = parseInt(year);
         filtered = filtered.filter(s => s.curriculum?.academicYear === yearNum);
-        console.log(`📅 Po roku ${year}: ${filtered.length} przedmiotów`);
+        console.log(`Po roku ${year}: ${filtered.length} przedmiotów`);
       }
 
       // Filtr po poziomie kształcenia
       if (level) {
         filtered = filtered.filter(s => s.curriculum?.level === level);
-        console.log(`🎓 Po poziomie "${level}": ${filtered.length} przedmiotów`);
+        console.log(`Po poziomie "${level}": ${filtered.length} przedmiotów`);
       }
 
       // Filtr po trybie studiów
       if (mode) {
         filtered = filtered.filter(s => s.curriculum?.studyMode === mode);
-        console.log(`📚 Po trybie "${mode}": ${filtered.length} przedmiotów`);
+        console.log(`Po trybie "${mode}": ${filtered.length} przedmiotów`);
       }
 
       setList(filtered);
-      console.log(`✅ Wyświetlono ${filtered.length} z ${allData.length} przedmiotów`);
+      console.log(`Wyświetlono ${filtered.length} z ${allData.length} przedmiotów`);
       
     } catch (err) {
-      console.error('❌ SyllabusList: błąd pobierania:', err);
+      console.error('SyllabusList: błąd pobierania:', err);
       setError(`Błąd: ${err}`);
     } finally {
       setLoading(false);
@@ -78,7 +78,7 @@ export default function SyllabusList() {
   // Przeładuj dane gdy zmienią się parametry URL
   React.useEffect(() => {
     load();
-  }, [searchParams]); // 🔄 Reaguj na zmiany w URL
+  }, [searchParams]); // Reaguj na zmiany w URL
 
   if (loading) {
     return (
@@ -137,7 +137,7 @@ export default function SyllabusList() {
         <div style={{ padding: 20, textAlign: 'center', background: '#f8f9fa', borderRadius: 8 }}>
           {hasFilters ? (
             <>
-              <p>😕 Nie znaleziono przedmiotów spełniających kryteria.</p>
+              <p>Nie znaleziono przedmiotów spełniających kryteria.</p>
               <button 
                 onClick={() => window.location.href = '/'}
                 style={{ padding: '8px 16px', cursor: 'pointer' }}

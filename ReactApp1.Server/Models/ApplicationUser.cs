@@ -25,6 +25,6 @@ namespace ReactApp1.Server.Models
     {
         public const string Reader = "Reader";   // U¿ytkownik tylko do odczytu
         public const string Editor = "Editor";   // U¿ytkownik z pe³nymi prawami
-        public const string Admin = "Admin";     // Administrator (opcjonalnie)
+        public const string Admin = "Admin";     // Administrator 
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ReactApp1.Server.Data;
 using ReactApp1.Server.Models;
+using ReactApp1.Server.Services;
 
 namespace ReactApp1.Server.Controllers
 {
@@ -11,14 +12,16 @@ namespace ReactApp1.Server.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // 🔒 Wszystkie endpointy wymagają zalogowania
+    [Authorize] // Wszystkie endpointy wymagają zalogowania
     public class SubjectsController : ControllerBase
     {
         private readonly AppDbContext _db;
+        private readonly SyllabusPdfService _pdfService;
 
-        public SubjectsController(AppDbContext db)
+        public SubjectsController(AppDbContext db, SyllabusPdfService pdfService)
         {
             _db = db;
+            _pdfService = pdfService;
         }
 
         // === GET: api/subjects?curriculumId=...&semester=...&search=... ===
@@ -26,7 +29,7 @@ namespace ReactApp1.Server.Controllers
         /// Pobierz listę przedmiotów (dostępne dla wszystkich zalogowanych użytkowników).
         /// </summary>
         [HttpGet]
-        [AllowAnonymous] // 🔓 Wyjątek: pozwalamy czytać bez logowania (opcjonalne)
+        [AllowAnonymous] // Wyjątek: pozwól czytać bez logowania
         public async Task<IActionResult> GetAll(
             [FromQuery] Guid? curriculumId, 
             [FromQuery] int? semester, 
@@ -58,10 +61,10 @@ namespace ReactApp1.Server.Controllers
 
         // === GET: api/subjects/{id} ===
         /// <summary>
-        /// Pobierz szczegóły przedmiotu (dostępne dla wszystkich).
+        /// Pobierz szczegóły przedmiotu - dostępne dla wszystkich
         /// </summary>
         [HttpGet("{id:guid}")]
-        [AllowAnonymous] // 🔓 Czytanie bez logowania
+        [AllowAnonymous] // Czytanie bez logowania
         public async Task<IActionResult> GetById(Guid id)
         {
             var subject = await _db.Subjects
@@ -79,7 +82,7 @@ namespace ReactApp1.Server.Controllers
         /// Utwórz nowy przedmiot (TYLKO DLA EDITORÓW).
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "Editor,Admin")] // 🔒 Tylko Editor lub Admin
+        [Authorize(Roles = "Editor,Admin")] // Tylko Editor lub Admin
         public async Task<IActionResult> Create([FromBody] Subject subject)
         {
             if (subject == null) return BadRequest("Dane przedmiotu są wymagane");
@@ -145,7 +148,7 @@ namespace ReactApp1.Server.Controllers
         /// Usuń przedmiot (TYLKO DLA ADMINÓW).
         /// </summary>
         [HttpDelete("{id:guid}")]
-        [Authorize(Roles = "Admin")] // 🔒 Tylko Admin może usuwać
+        [Authorize(Roles = "Admin")] // Tylko Admin może usuwać
         public async Task<IActionResult> Delete(Guid id)
         {
             var subject = await _db.Subjects.FindAsync(id);
@@ -207,6 +210,72 @@ namespace ReactApp1.Server.Controllers
                 .ToListAsync();
 
             return Ok(versions);
+        }
+
+        // === GET: api/subjects/{id}/pdf ===
+        /// <summary>
+        /// Pobierz PDF sylabusa przedmiotu (najnowsza wersja)
+        /// </summary>
+        [HttpGet("{id:guid}/pdf")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DownloadPdf(Guid id)
+        {
+            var subject = await _db.Subjects
+                .Include(s => s.Versions.OrderByDescending(v => v.VersionNumber))
+                .Include(s => s.Curriculum)
+                    .ThenInclude(c => c!.Center)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (subject == null) return NotFound("Przedmiot nie istnieje");
+
+            var latestVersion = subject.Versions.FirstOrDefault();
+            if (latestVersion == null) return NotFound("Brak wersji sylabusa");
+
+            try
+            {
+                var pdfBytes = _pdfService.GenerateSubjectPdf(subject, latestVersion, subject.Curriculum!);
+                
+                var fileName = $"{subject.Code}_{subject.Name.Replace(" ", "_")}_v{latestVersion.VersionNumber}.pdf";
+                
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Błąd generowania PDF: {ex.Message}");
+            }
+        }
+
+        // === GET: api/subjects/{id}/versions/{versionNumber}/pdf ===
+        /// <summary>
+        /// Pobierz PDF konkretnej wersji sylabusa
+        /// </summary>
+        [HttpGet("{id:guid}/versions/{versionNumber:int}/pdf")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DownloadVersionPdf(Guid id, int versionNumber)
+        {
+            var subject = await _db.Subjects
+                .Include(s => s.Versions)
+                .Include(s => s.Curriculum)
+                    .ThenInclude(c => c!.Center)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (subject == null) return NotFound("Przedmiot nie istnieje");
+
+            var version = subject.Versions.FirstOrDefault(v => v.VersionNumber == versionNumber);
+            if (version == null) return NotFound($"Wersja {versionNumber} nie istnieje");
+
+            try
+            {
+                var pdfBytes = _pdfService.GenerateSubjectPdf(subject, version, subject.Curriculum!);
+                
+                var fileName = $"{subject.Code}_{subject.Name.Replace(" ", "_")}_v{version.VersionNumber}.pdf";
+                
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Błąd generowania PDF: {ex.Message}");
+            }
         }
     }
 }

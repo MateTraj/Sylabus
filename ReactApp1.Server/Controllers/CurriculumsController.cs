@@ -11,7 +11,7 @@ namespace ReactApp1.Server.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // 🔒 Wymagane zalogowanie
+    [Authorize]
     public class CurriculumsController : ControllerBase
     {
         private readonly AppDbContext _db;
@@ -26,7 +26,7 @@ namespace ReactApp1.Server.Controllers
         /// Pobierz listę siatek przedmiotów.
         /// </summary>
         [HttpGet]
-        [AllowAnonymous] // 🔓 Czytanie bez logowania (opcjonalne)
+        [AllowAnonymous] // Czytanie bez logowania
         public async Task<IActionResult> GetAll(
             [FromQuery] int? year, 
             [FromQuery] string? level,
@@ -86,6 +86,11 @@ namespace ReactApp1.Server.Controllers
             if (string.IsNullOrWhiteSpace(curriculum.Name))
                 return BadRequest("Nazwa siatki jest wymagana");
 
+            // Sprawdź czy kod już istnieje
+            var exists = await _db.Curriculums.AnyAsync(c => c.Code == curriculum.Code);
+            if (exists)
+                return BadRequest($"Sylabus o kodzie '{curriculum.Code}' już istnieje");
+
             // Dodaj autora
             curriculum.CreatedBy = User.Identity?.Name ?? "Unknown";
             curriculum.CreatedAt = DateTime.UtcNow;
@@ -98,14 +103,34 @@ namespace ReactApp1.Server.Controllers
 
         // === PUT: api/curriculums/{id} ===
         /// <summary>
-        /// Zaktualizuj siatkę przedmiotów (TYLKO DLA EDITORÓW).
+        /// Zaktualizuj sylabus (TYLKO DLA EDITORÓW).
         /// </summary>
         [HttpPut("{id:guid}")]
         [Authorize(Roles = "Editor,Admin")]
         public async Task<IActionResult> Update(Guid id, [FromBody] Curriculum updatedCurriculum)
         {
+            if (updatedCurriculum == null) 
+                return BadRequest("Dane siatki są wymagane");
+
             var curriculum = await _db.Curriculums.FindAsync(id);
-            if (curriculum == null) return NotFound();
+            if (curriculum == null) 
+                return NotFound("Sylabus nie istnieje");
+
+            // Walidacja
+            if (string.IsNullOrWhiteSpace(updatedCurriculum.Code))
+                return BadRequest("Kod siatki jest wymagany");
+
+            if (string.IsNullOrWhiteSpace(updatedCurriculum.Name))
+                return BadRequest("Nazwa siatki jest wymagana");
+
+            // Sprawdź czy nowy kod nie koliduje z innym sylabusem
+            if (updatedCurriculum.Code != curriculum.Code)
+            {
+                var codeExists = await _db.Curriculums.AnyAsync(c => 
+                    c.Code == updatedCurriculum.Code && c.Id != id);
+                if (codeExists)
+                    return BadRequest($"Sylabus o kodzie '{updatedCurriculum.Code}' już istnieje");
+            }
 
             // Aktualizuj pola
             curriculum.Name = updatedCurriculum.Name;
@@ -114,6 +139,7 @@ namespace ReactApp1.Server.Controllers
             curriculum.AcademicYear = updatedCurriculum.AcademicYear;
             curriculum.Level = updatedCurriculum.Level;
             curriculum.StudyMode = updatedCurriculum.StudyMode;
+            curriculum.CenterId = updatedCurriculum.CenterId;
 
             await _db.SaveChangesAsync();
             return Ok(curriculum);
@@ -121,14 +147,25 @@ namespace ReactApp1.Server.Controllers
 
         // === DELETE: api/curriculums/{id} ===
         /// <summary>
-        /// Usuń siatkę przedmiotów (TYLKO DLA ADMINÓW).
+        /// Usuń sylabus (TYLKO DLA ADMINÓW).
+        /// Uwaga: usunie również wszystkie przypisane przedmioty!
         /// </summary>
         [HttpDelete("{id:guid}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var curriculum = await _db.Curriculums.FindAsync(id);
-            if (curriculum == null) return NotFound();
+            var curriculum = await _db.Curriculums
+                .Include(c => c.Subjects)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (curriculum == null) 
+                return NotFound("Sylabus nie istnieje");
+
+            // Sprawdź czy ma przypisane przedmioty
+            if (curriculum.Subjects != null && curriculum.Subjects.Any())
+            {
+                return BadRequest($"Nie można usunąć sylabusa zawierającego {curriculum.Subjects.Count} przedmiotów. Najpierw usuń przedmioty.");
+            }
 
             _db.Curriculums.Remove(curriculum);
             await _db.SaveChangesAsync();

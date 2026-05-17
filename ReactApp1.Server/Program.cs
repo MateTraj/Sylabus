@@ -73,6 +73,7 @@ builder.Services.AddCors(options =>
 
 // === 6. SERWISY ===
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<SyllabusPdfService>(); 
 
 // === 7. KONTROLERY ===
 builder.Services.AddControllers()
@@ -96,24 +97,24 @@ using (var scope = app.Services.CreateScope())
     
     try 
     {
-        // ✅ Zastosuj migracje (tworzy/aktualizuje bazę BEZ kasowania danych)
+        // Zastosuj migracje (tworzy/aktualizuje bazę BEZ kasowania danych)
         logger.LogInformation("Stosowanie migracji bazy danych...");
         context.Database.Migrate();
         
-        logger.LogInformation("✅ Baza danych zaktualizowana!");
-        logger.LogInformation($"   📊 Przedmioty: {context.Subjects.Count()}");
-        logger.LogInformation($"   📚 Siatki: {context.Curriculums.Count()}");
-        logger.LogInformation($"   👤 Użytkownicy: {context.Users.Count()}");
+        logger.LogInformation("Baza danych zaktualizowana!");
+        logger.LogInformation($"   Przedmioty: {context.Subjects.Count()}");
+        logger.LogInformation($"   Siatki: {context.Curriculums.Count()}");
+        logger.LogInformation($"   Użytkownicy: {context.Users.Count()}");
         
-        // ℹ️ Jeśli baza jest pusta, dane seed z AppDbContext zostaną automatycznie dodane
+        // Jeśli baza jest pusta, dane seed z AppDbContext zostaną automatycznie dodane
         if (!context.Users.Any())
         {
-            logger.LogInformation("ℹ️ Baza pusta - dane testowe zostały dodane przez OnModelCreating");
+            logger.LogInformation("Baza pusta - dane testowe zostały dodane przez OnModelCreating");
         }
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "❌ Błąd podczas inicjalizacji bazy danych");
+        logger.LogError(ex, "Błąd podczas inicjalizacji bazy danych");
     }
 }
 
