@@ -74,6 +74,11 @@ builder.Services.AddCors(options =>
 // === 6. SERWISY ===
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<SyllabusPdfService>(); 
+builder.Services.AddHttpClient("ClojureDiff", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:3001");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // === 7. KONTROLERY ===
 builder.Services.AddControllers()

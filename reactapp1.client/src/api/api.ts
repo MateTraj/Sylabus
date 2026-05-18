@@ -355,6 +355,70 @@ export async function downloadSubjectVersionPdf(
   window.URL.revokeObjectURL(downloadUrl);
 }
 
+// === DIFF API (Clojure microservice) ===
+export interface DiffComparison {
+  comparison: {
+    version1: number;
+    version2: number;
+    similarity: number;
+  };
+  summary: {
+    totalChanges: number;
+    added: number;
+    removed: number;
+    changed: number;
+    majorChanges: number;
+    minorChanges: number;
+    hasSignificantChanges: boolean;
+  };
+  details: {
+    added: Array<{ field: string; label: string; value: any; category: string }>;
+    removed: Array<{ field: string; label: string; value: any; category: string }>;
+    changed: Array<{ field: string; label: string; oldValue: any; newValue: any; category: string }>;
+  };
+}
+
+export interface ChangelogEntry {
+  version: number;
+  date: string;
+  author: string;
+  changeNote: string;
+  type: 'initial' | 'update';
+  summary?: {
+    totalChanges: number;
+    majorChanges: number;
+    hasSignificantChanges: boolean;
+  };
+  changes?: any;
+}
+
+/**
+ * Porównaj dwie wersje sylabusa
+ */
+export async function compareVersions(
+  subjectId: string, 
+  version1: number, 
+  version2: number
+): Promise<DiffComparison> {
+  const url = `/api/diff/compare-versions/${subjectId}?version1=${version1}&version2=${version2}`;
+  
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: getAuthHeaders()
+  });
+  
+  return handleResponse<DiffComparison>(res);
+}
+
+/**
+ * Pobierz pełny changelog przedmiotu
+ */
+export async function getChangelog(subjectId: string) {
+  const url = `/api/diff/changelog/${subjectId}`;
+  const res = await fetch(url, { headers: getAuthHeaders() });
+  return handleResponse<{ changelog: ChangelogEntry[]; totalVersions: number }>(res);
+}
+
 // Aliasy
 export const fetchSyllabuses = fetchSubjects;
 export const fetchSyllabus = fetchSubject;
