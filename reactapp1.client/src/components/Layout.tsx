@@ -295,7 +295,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <div className="footer">
         <p style={{ textAlign: 'center', lineHeight: '100px', margin: 0 }}>
-          © Uczelnia — System Zarządzania Sylabusami
+          © Uczelnia XYZ — System Zarządzania Sylabusami
         </p>
       </div>
     </>

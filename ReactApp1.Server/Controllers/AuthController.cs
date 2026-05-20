@@ -86,26 +86,28 @@ namespace ReactApp1.Server.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // 1. Walidacja
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            // 2. Znajdź użytkownika po emailu
+            Console.WriteLine($"=== Login attempt: {request.Email}");
+            
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
-                return Unauthorized(new { message = "Nieprawidłowy email lub hasło" });
-
-            // 3. Sprawdź hasło
-            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: false);
-
+            {
+                Console.WriteLine("User not found");
+                return Unauthorized(new { message = "Nieprawidłowe dane logowania" });
+            }
+            
+            var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
             if (!result.Succeeded)
-                return Unauthorized(new { message = "Nieprawidłowy email lub hasło" });
-
+            {
+                Console.WriteLine("Password incorrect");
+                return Unauthorized(new { message = "Nieprawidłowe dane logowania" });
+            }
+            
             // 4. Wygeneruj token
             var roles = await _userManager.GetRolesAsync(user);
             var token = _jwtService.GenerateToken(user, roles);
 
             // 5. Zwróć token i dane użytkownika
+            Console.WriteLine("Login successful");
             return Ok(new LoginResponse
             {
                 Token = token,
